@@ -8,19 +8,19 @@ echo "🚀 Starting development environment setup..."
 echo "This will install: PHP 8.3, Docker, development tools, and configure dotfiles"
 echo ""
 
-# Helper function for progress feedback
+# Helper functions for progress feedback
 print_step() {
   echo ""
   echo "📦 $1..."
 }
 
+print_success() {
+  echo "✅ $1"
+}
+
 # System update and basic tools
 print_step "Updating system and installing basic tools"
-sudo apt update        if command -v node >/dev/null 2>&1; then
-            NODE_VERSION=$(node --version 2>/dev/null)
-            print_success "Node.js is already installed (version: $NODE_VERSION)"
-            return 0
-        fi
+sudo apt update
 sudo apt install -y curl wget gpg ca-certificates git
 
 # Clone dotfiles first
@@ -95,21 +95,23 @@ else
 
   # Verify installation
   go version
+
+  cd ~
 fi
 
 # Install Rust
 if command -v rustc >/dev/null 2>&1 && command -v cargo >/dev/null 2>&1; then
   RUST_VERSION=$(rustc --version 2>/dev/null | awk '{print $2}')
-  echo "Rust is already installed (version: $RUST_VERSION)"
+  print_success "Rust is already installed (version: $RUST_VERSION)"
 else
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
   source ~/.cargo/env
 fi
 
 # Install Node
-if command -v nvm >/dev/null 2>&1; then
+if command -v node >/dev/null 2>&1; then
   NODE_VERSION=$(node --version 2>/dev/null)
-  echo "Node.js is already installed (version: $NODE_VERSION)"
+  print_success "Node.js is already installed (version: $NODE_VERSION)"
 else
   # Download and install nvm (check for latest version)
   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
@@ -202,6 +204,126 @@ rm /tmp/google-chrome.deb
 print_step "Installing Go tools"
 go install github.com/jesseduffield/lazydocker@latest
 go install github.com/jesseduffield/lazygit@latest
+
+# Configure GNOME desktop settings
+print_step "Setting up GNOME shortcuts and preferences"
+
+# Navigate to workspace 1
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-1 "['<Super>1']"
+# Navigate to workspace 2
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-2 "['<Super>2']"
+# Navigate to workspace 3
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-3 "['<Super>3']"
+# Navigate to workspace 4
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-4 "['<Super>4']"
+# Navigate to workspace 5
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-5 "['<Super>5']"
+# Navigate to workspace 6
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-6 "['<Super>6']"
+
+# Move window to workspace 1
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-1 "['<Super><Shift>1']"
+# Move window to workspace 2
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-2 "['<Super><Shift>2']"
+# Move window to workspace 3
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-3 "['<Super><Shift>3']"
+# Move window to workspace 4
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-4 "['<Super><Shift>4']"
+# Move window to workspace 5
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-5 "['<Super><Shift>5']"
+# Move window to workspace 6
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-6 "['<Super><Shift>6']"
+
+gsettings set org.gnome.shell.keybindings switch-to-application-1 "['<Alt>1']"
+gsettings set org.gnome.shell.keybindings switch-to-application-2 "['<Alt>2']"
+gsettings set org.gnome.shell.keybindings switch-to-application-3 "['<Alt>3']"
+gsettings set org.gnome.shell.keybindings switch-to-application-4 "['<Alt>4']"
+gsettings set org.gnome.shell.keybindings switch-to-application-5 "['<Alt>5']"
+gsettings set org.gnome.shell.keybindings switch-to-application-6 "['<Alt>6']"
+gsettings set org.gnome.shell.keybindings switch-to-application-7 "['<Alt>7']"
+gsettings set org.gnome.shell.keybindings switch-to-application-8 "['<Alt>8']"
+gsettings set org.gnome.shell.keybindings switch-to-application-9 "['<Alt>9']"
+
+gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ name 'Flameshot'
+gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ command 'flameshot gui'
+gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ binding 'Print'
+
+gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/']"
+
+# Apply Ubuntu system optimizations
+print_step "Applying Ubuntu optimizations"
+# Debloat system
+sudo apt remove -y aisleriot gnome-mahjongg gnome-mines rhythmbox totem
+sudo apt remove -y apport whoopsie ubuntu-report
+
+# Optimize services
+sudo systemctl disable NetworkManager-wait-online.service
+sudo systemctl disable plymouth-quit-wait.service
+sudo systemctl disable snapd.service
+
+# Clean system
+print_step "Cleaning system packages"
+sudo apt autoremove -y && sudo apt autoclean
+
+# Apply SWAP optimizations
+print_step "Optimizing swap configuration"
+# Configuration
+SWAP_SIZE="6G" # Adjust as needed (4G-8G recommended)
+SWAPPINESS=10
+ENABLE_HIBERNATION=false # Set to true if needed
+
+# Remove default small swap
+sudo swapoff /swap.img 2>/dev/null || true
+sudo rm -f /swap.img
+
+# Create optimized swap file
+echo "Creating ${SWAP_SIZE} swap file..."
+sudo fallocate -l "$SWAP_SIZE" /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+# Configure fstab
+sudo cp /etc/fstab /etc/fstab.backup
+sudo sed -i '/swap/d' /etc/fstab
+echo '/swapfile none swap sw,discard=once 0 0' | sudo tee -a /etc/fstab
+
+# Optimize kernel parameters (consolidated)
+sudo tee /etc/sysctl.d/99-swap-optimization.conf <<EOF
+vm.swappiness=$SWAPPINESS
+vm.vfs_cache_pressure=50
+vm.dirty_ratio=15
+vm.dirty_background_ratio=5
+vm.page-cluster=0
+EOF
+
+# Enable zswap (consolidated configuration)
+sudo sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="[^"]*/& zswap.enabled=1 zswap.compressor=lz4 zswap.zpool=zsmalloc zswap.max_pool_percent=80/' /etc/default/grub
+sudo update-grub
+
+# Configure hibernation if requested
+if [[ "$ENABLE_HIBERNATION" == "true" ]]; then
+  echo "Configuring hibernation support..."
+  ROOT_UUID=$(findmnt -n -o UUID /)
+  SWAP_OFFSET=$(sudo filefrag -v /swapfile | awk 'NR==4{print $4}' | cut -d. -f1)
+
+  sudo sed -i "s/zswap.max_pool_percent=80/& resume=UUID=$ROOT_UUID resume_offset=$SWAP_OFFSET/" /etc/default/grub
+  echo "RESUME=UUID=$ROOT_UUID resume_offset=$SWAP_OFFSET" | sudo tee /etc/initramfs-tools/conf.d/resume
+  sudo update-grub
+  sudo update-initramfs -u
+fi
+
+# Apply sysctl changes
+sudo sysctl -p /etc/sysctl.d/99-swap-optimization.conf
+
+print_success "Swap optimization complete! Current configuration:"
+sudo swapon --show
+free -h
+echo "Note: Reboot required for all changes to take effect."
+
+# Apply color scheme and theme
+gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-purple-dark'
+gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 
 # Verification
 print_step "Verifying installations"
