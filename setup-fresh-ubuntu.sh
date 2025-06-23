@@ -87,7 +87,7 @@ fi
 # Setup dotfiles
 print_step "Configuring dotfiles"
 cd ~/dotfiles
-rm -rf ~/.config/nvim ~/.zshrc 2>/dev/null || true
+rm -rf ~/.config/nvim ~/.zshrc
 stow zsh
 stow lazyvim
 stow tmux
