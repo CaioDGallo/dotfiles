@@ -347,8 +347,10 @@ apps=(
   "google-chrome.desktop"
   "com.mitchellh.ghostty.desktop"
   "WhatsApp.desktop"
+  "com.discordapp.Discord.desktop"
   "md.obsidian.Obsidian.desktop"
   "1password.desktop"
+  "com.getpostman.Postman.desktop"
   "org.gnome.Settings.desktop"
 )
 
