@@ -130,3 +130,5 @@ export PATH="$PATH:/home/caiodgallo/.local/bin"
 export PATH=/usr/lib/cargo/bin/coreutils:$PATH
 
 eval "$(atuin init zsh)"
+
+. "$HOME/.atuin/bin/env"
