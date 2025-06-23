@@ -247,7 +247,7 @@ else
   fi
 
   sudo apt update
-  sudo apt install -y 1password
+  sudo apt install -y 1password 1password-cli
 fi
 
 # Install Ghostty terminal
