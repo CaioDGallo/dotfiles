@@ -33,26 +33,39 @@ else
 fi
 
 # Install PHP 8.3 with extensions
-print_step "Installing PHP 8.3 with extensions"
-sudo apt-get update
-sudo apt-get upgrade
-sudo apt install -y --no-install-recommends php php-cli php-common \
-  php-mysql php-zip php-gd php-mbstring php-curl \
-  php-xml php-bcmath
+if command -v php >/dev/null 2>&1; then
+  PHP_VERSION=$(php --version | head -n1 | awk '{print $2}' | cut -d. -f1,2)
+  print_success "PHP is already installed (version: $PHP_VERSION)"
+else
+  print_step "Installing PHP 8.3 with extensions"
+  sudo apt-get update
+  sudo apt-get upgrade
+  sudo apt install -y --no-install-recommends php php-cli php-common \
+    php-mysql php-zip php-gd php-mbstring php-curl \
+    php-xml php-bcmath
+fi
 
 # Install Docker
-print_step "Installing Docker"
-sudo install -m 0755 -d /etc/apt/keyrings
-sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-sudo chmod a+r /etc/apt/keyrings/docker.asc
+if command -v docker >/dev/null 2>&1; then
+  DOCKER_VERSION=$(docker --version | awk '{print $3}' | sed 's/,//')
+  print_success "Docker is already installed (version: $DOCKER_VERSION)"
+else
+  print_step "Installing Docker"
+  sudo install -m 0755 -d /etc/apt/keyrings
+  sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" |
-  sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
+  # Check if Docker repository is already added
+  if [ ! -f /etc/apt/sources.list.d/docker.list ]; then
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" |
+      sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
+  fi
 
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  sudo apt update
+  sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+fi
 
 # Configure Docker for current user
 sudo groupadd docker 2>/dev/null || true # Don't fail if group exists
@@ -63,8 +76,13 @@ print_step "Installing development tools"
 sudo apt install -y ripgrep fd-find zsh bat tmux tmuxp stow rust-coreutils \
   lua5.4 luarocks flameshot flatpak
 
-# Make zsh the default shell
-sudo chsh -s $(which zsh)
+# Make zsh the default shell (only if not already set)
+if [ "$SHELL" != "$(which zsh)" ]; then
+  print_step "Setting zsh as default shell"
+  sudo chsh -s $(which zsh) $USER
+else
+  print_success "Zsh is already the default shell"
+fi
 
 # Setup dotfiles
 print_step "Configuring dotfiles"
@@ -133,10 +151,38 @@ fi
 
 # Install Rust tools (only after Rust is installed)
 print_step "Installing Rust tools"
-cargo install eza zoxide xh du-dust yazi-cli bob-nvim
+# Check if Rust tools are already installed
+RUST_TOOLS=("eza" "zoxide" "xh" "dust" "yazi" "bob")
+TOOLS_TO_INSTALL=()
+
+for tool in "${RUST_TOOLS[@]}"; do
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    case "$tool" in
+    "dust") TOOLS_TO_INSTALL+=("du-dust") ;;
+    "yazi") TOOLS_TO_INSTALL+=("yazi-cli") ;;
+    "bob") TOOLS_TO_INSTALL+=("bob-nvim") ;;
+    *) TOOLS_TO_INSTALL+=("$tool") ;;
+    esac
+  else
+    echo "✅ $tool is already installed"
+  fi
+done
+
+if [ ${#TOOLS_TO_INSTALL[@]} -gt 0 ]; then
+  echo "Installing: ${TOOLS_TO_INSTALL[*]}"
+  cargo install "${TOOLS_TO_INSTALL[@]}"
+else
+  print_success "All Rust tools are already installed"
+fi
 
 # Install Atuin
-curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
+if command -v atuin >/dev/null 2>&1; then
+  ATUIN_VERSION=$(atuin --version | awk '{print $2}')
+  print_success "Atuin is already installed (version: $ATUIN_VERSION)"
+else
+  print_step "Installing Atuin"
+  curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
+fi
 
 # Install fzf
 print_step "Installing fzf"
@@ -158,14 +204,14 @@ if [ ! -d ~/.oh-my-zsh ]; then
 fi
 
 # Install Zsh Syntax Highlighting
-if [ ! -d ".oh-my-zsh/custom/plugins/zsh-syntax-highlighting" ]; then
+if [ ! -d "~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" ]; then
   git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 else
   echo "zsh-syntax-highlighting directory already exists, skipping clone"
 fi
 
 # Install Zsh AutoSuggestions
-if [ ! -d ".oh-my-zsh/custom/plugins/zsh-autosuggestions" ]; then
+if [ ! -d "~/.oh-my-zsh/custom/plugins/zsh-autosuggestions" ]; then
   git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 else
   echo "zsh-autosuggestions directory already exists, skipping clone"
@@ -176,34 +222,60 @@ print_step "Setting up Neovim nightly"
 bob use nightly
 
 # Install 1Password
-print_step "Installing 1Password"
-curl -sS https://downloads.1password.com/linux/keys/1password.asc |
-  sudo gpg --dearmor --output /usr/share/keyrings/1password-archive-keyring.gpg
-echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/1password-archive-keyring.gpg] https://downloads.1password.com/linux/debian/amd64 stable main' |
-  sudo tee /etc/apt/sources.list.d/1password.list
+if command -v 1password >/dev/null 2>&1 || dpkg -l | grep -q 1password; then
+  print_success "1Password is already installed"
+else
+  print_step "Installing 1Password"
+  # Check if 1Password repository is already added
+  if [ ! -f /etc/apt/sources.list.d/1password.list ]; then
+    curl -sS https://downloads.1password.com/linux/keys/1password.asc |
+      sudo gpg --dearmor --output /usr/share/keyrings/1password-archive-keyring.gpg
+    echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/1password-archive-keyring.gpg] https://downloads.1password.com/linux/debian/amd64 stable main' |
+      sudo tee /etc/apt/sources.list.d/1password.list
+  fi
 
-sudo mkdir -p /etc/debsig/policies/AC2D62742012EA22/
-curl -sS https://downloads.1password.com/linux/debian/debsig/1password.pol |
-  sudo tee /etc/debsig/policies/AC2D62742012EA22/1password.pol
-sudo mkdir -p /usr/share/debsig/keyrings/AC2D62742012EA22
-curl -sS https://downloads.1password.com/linux/keys/1password.asc |
-  sudo gpg --dearmor --output /usr/share/debsig/keyrings/AC2D62742012EA22/debsig.gpg
+  sudo mkdir -p /etc/debsig/policies/AC2D62742012EA22/
+  if [ ! -f /etc/debsig/policies/AC2D62742012EA22/1password.pol ]; then
+    curl -sS https://downloads.1password.com/linux/debian/debsig/1password.pol |
+      sudo tee /etc/debsig/policies/AC2D62742012EA22/1password.pol
+  fi
 
-sudo apt update
-sudo apt install -y 1password
+  sudo mkdir -p /usr/share/debsig/keyrings/AC2D62742012EA22
+  if [ ! -f /usr/share/debsig/keyrings/AC2D62742012EA22/debsig.gpg ]; then
+    curl -sS https://downloads.1password.com/linux/keys/1password.asc |
+      sudo gpg --dearmor --output /usr/share/debsig/keyrings/AC2D62742012EA22/debsig.gpg
+  fi
+
+  sudo apt update
+  sudo apt install -y 1password
+fi
 
 # Install Ghostty terminal
-print_step "Installing Ghostty terminal"
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/mkasberg/ghostty-ubuntu/HEAD/install.sh)"
+if command -v ghostty >/dev/null 2>&1; then
+  print_success "Ghostty terminal is already installed"
+else
+  print_step "Installing Ghostty terminal"
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/mkasberg/ghostty-ubuntu/HEAD/install.sh)"
+fi
 
 # Install Google Chrome (using modern method)
-print_step "Installing Google Chrome"
-wget -q -O /tmp/google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-sudo apt install -y /tmp/google-chrome.deb
-rm /tmp/google-chrome.deb
+if command -v google-chrome >/dev/null 2>&1 || dpkg -l | grep -q google-chrome; then
+  print_success "Google Chrome is already installed"
+else
+  print_step "Installing Google Chrome"
+  wget -q -O /tmp/google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+  sudo apt install -y /tmp/google-chrome.deb
+  rm /tmp/google-chrome.deb
+fi
 
 # Install Obsidian
-flatpak install -y flathub md.obsidian.Obsidian
+if flatpak list | grep -q md.obsidian.Obsidian; then
+  print_success "Obsidian is already installed"
+else
+  print_step "Installing Obsidian"
+  flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+  flatpak install -y flathub md.obsidian.Obsidian
+fi
 
 # Install Go tools
 print_step "Installing Go tools"
@@ -309,40 +381,53 @@ print_step "Cleaning system packages"
 sudo apt autoremove -y && sudo apt autoclean
 
 # Apply SWAP optimizations
-print_step "Optimizing swap configuration"
-# Configuration
-SWAP_SIZE="6G" # Adjust as needed (4G-8G recommended)
-SWAPPINESS=10
-ENABLE_HIBERNATION=false # Set to true if needed
+if [ -f /swapfile ] && swapon --show | grep -q /swapfile; then
+  print_success "Swap optimization already configured"
+else
+  print_step "Optimizing swap configuration"
+  # Configuration
+  SWAP_SIZE="6G" # Adjust as needed (4G-8G recommended)
+  SWAPPINESS=10
+  ENABLE_HIBERNATION=false # Set to true if needed
 
-# Remove default small swap
-sudo swapoff /swap.img 2>/dev/null || true
-sudo rm -f /swap.img
+  # Remove default small swap
+  sudo swapoff /swap.img 2>/dev/null || true
+  sudo rm -f /swap.img
 
-# Create optimized swap file
-echo "Creating ${SWAP_SIZE} swap file..."
-sudo fallocate -l "$SWAP_SIZE" /swapfile
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile
+  # Create optimized swap file if it doesn't exist
+  if [ ! -f /swapfile ]; then
+    echo "Creating ${SWAP_SIZE} swap file..."
+    sudo fallocate -l "$SWAP_SIZE" /swapfile
+    sudo chmod 600 /swapfile
+    sudo mkswap /swapfile
+  fi
 
-# Configure fstab
-sudo cp /etc/fstab /etc/fstab.backup
-sudo sed -i '/swap/d' /etc/fstab
-echo '/swapfile none swap sw,discard=once 0 0' | sudo tee -a /etc/fstab
+  sudo swapon /swapfile
 
-# Optimize kernel parameters (consolidated)
-sudo tee /etc/sysctl.d/99-swap-optimization.conf <<EOF
+  # Configure fstab (only if not already configured)
+  if ! grep -q '/swapfile' /etc/fstab; then
+    sudo cp /etc/fstab /etc/fstab.backup
+    sudo sed -i '/swap/d' /etc/fstab
+    echo '/swapfile none swap sw,discard=once 0 0' | sudo tee -a /etc/fstab
+  fi
+
+  # Optimize kernel parameters (only if config doesn't exist)
+  if [ ! -f /etc/sysctl.d/99-swap-optimization.conf ]; then
+    sudo tee /etc/sysctl.d/99-swap-optimization.conf <<EOF
 vm.swappiness=$SWAPPINESS
 vm.vfs_cache_pressure=50
 vm.dirty_ratio=15
 vm.dirty_background_ratio=5
 vm.page-cluster=0
 EOF
+  fi
 
-# Enable zswap (consolidated configuration)
-sudo sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="[^"]*/& zswap.enabled=1 zswap.compressor=lz4 zswap.zpool=zsmalloc zswap.max_pool_percent=80/' /etc/default/grub
-sudo update-grub
+  # Enable zswap (only if not already configured)
+  if ! grep -q 'zswap.enabled=1' /etc/default/grub; then
+    sudo sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="[^"]*/& zswap.enabled=1 zswap.compressor=lz4 zswap.zpool=zsmalloc zswap.max_pool_percent=80/' /etc/default/grub
+    sudo update-grub
+  fi
+fi
 
 # Configure hibernation if requested
 if [[ "$ENABLE_HIBERNATION" == "true" ]]; then
