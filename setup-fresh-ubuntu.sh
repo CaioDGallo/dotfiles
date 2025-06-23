@@ -274,7 +274,7 @@ if flatpak list | grep -q md.obsidian.Obsidian; then
 else
   print_step "Installing Obsidian"
   flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-  flatpak install -y flathub md.obsidian.Obsidian com.discordapp.Discord
+  flatpak install -y flathub md.obsidian.Obsidian com.discordapp.Discord com.getpostman.Postman
 fi
 
 # Setup WhatsApp
