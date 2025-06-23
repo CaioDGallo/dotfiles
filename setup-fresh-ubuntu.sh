@@ -268,14 +268,29 @@ else
   rm /tmp/google-chrome.deb
 fi
 
-# Install Obsidian
+# Install Flatpak apps
 if flatpak list | grep -q md.obsidian.Obsidian; then
-  print_success "Obsidian is already installed"
+  print_success "Flatpak apps already installed"
 else
   print_step "Installing Obsidian"
   flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-  flatpak install -y flathub md.obsidian.Obsidian
+  flatpak install -y flathub md.obsidian.Obsidian com.discordapp.Discord
 fi
+
+# Setup WhatsApp
+cat <<EOF >~/.local/share/applications/WhatsApp.desktop
+[Desktop Entry]
+Version=1.0
+Name=WhatsApp
+Comment=WhatsApp Messenger
+Exec=google-chrome --app="https://web.whatsapp.com" --name=WhatsApp --class=Whatsapp
+Terminal=false
+Type=Application
+Icon=/home/$USER/.local/share/omakub/applications/icons/WhatsApp.png
+Categories=GTK;
+MimeType=text/html;text/xml;application/xhtml_xml;
+StartupNotify=true
+EOF
 
 # Install Go tools
 print_step "Installing Go tools"
@@ -330,7 +345,7 @@ gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "[
 # Favorite apps for dock
 apps=(
   "google-chrome.desktop"
-  "Ghostty.desktop"
+  "com.mitchellh.ghostty.desktop"
   "WhatsApp.desktop"
   "md.obsidian.Obsidian.desktop"
   "1password.desktop"
@@ -346,6 +361,7 @@ desktop_dirs=(
   "/usr/share/applications"
   "/usr/local/share/applications"
   "$HOME/.local/share/applications"
+  "$HOME/.local/share/flatpak/exports/share/applications"
 )
 
 # Check if a .desktop file exists for each app

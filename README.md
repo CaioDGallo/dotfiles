@@ -31,7 +31,7 @@ Modern development environment for Ubuntu Linux. Terminal-first workflow with se
 ## Installation
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/CaioDGallo/dotfiles/HEAD/setup-fresh-ubuntu.sh)"
+sudo apt install curl && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/CaioDGallo/dotfiles/HEAD/setup-fresh-ubuntu.sh)" && zsh
 ```
 
 Reboot after installation for full effect.
