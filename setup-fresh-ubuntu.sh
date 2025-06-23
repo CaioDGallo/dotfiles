@@ -34,9 +34,6 @@ fi
 
 # Install PHP 8.3 with extensions
 print_step "Installing PHP 8.3 with extensions"
-sudo add-apt-repository ppa:ondrej/php
-sudo apt install ppa-purge
-sudo ppa-purge ppa:ondrej/php
 sudo apt-get update
 sudo apt-get upgrade
 sudo apt install -y --no-install-recommends php php-cli php-common \
