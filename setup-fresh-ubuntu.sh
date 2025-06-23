@@ -39,9 +39,9 @@ sudo apt install ppa-purge
 sudo ppa-purge ppa:ondrej/php
 sudo apt-get update
 sudo apt-get upgrade
-sudo apt install -y --no-install-recommends php8.3 php8.3-cli php8.3-common \
-  php8.3-mysql php8.3-zip php8.3-gd php8.3-mbstring php8.3-curl \
-  php8.3-xml php8.3-bcmath
+sudo apt install -y --no-install-recommends php php-cli php-common \
+  php-mysql php-zip php-gd php-mbstring php-curl \
+  php-xml php-bcmath
 
 # Install Docker
 print_step "Installing Docker"
