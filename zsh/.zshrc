@@ -6,10 +6,10 @@ export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="robbyrussell"
 
 plugins=(
-	git
-	zsh-syntax-highlighting
-	zsh-autosuggestions
-	docker
+        git
+        zsh-syntax-highlighting
+        zsh-autosuggestions
+        docker
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -32,7 +32,7 @@ alias yp-prod="echo \"password: 2022!.Easy\" && ssh root@209.97.134.21"
 alias vim="nvim"
 alias ovim="vim"
 alias lzd="lazydocker"
-alias postman="nohup /home/caiogallo/Documents/Postman/Postman &> /dev/null &"
+alias postman="nohup /home/caiodgallo/Documents/Postman/Postman &> /dev/null &"
 alias nconf="cd ~/.config/nvim && nvim ."
 
 alias brgt1="xrandr --output eDP-1 --brightness 1 && xrandr --output HDMI-1-1 --brightness 1"
@@ -72,7 +72,7 @@ alias ffn="nvim \$(fzf -m --preview 'bat --color=always {}' --preview-window=rig
 alias ghask="gh copilot explain"
 alias ghsugg="gh copilot suggest"
 
-alias OmniSharp="/home/caiogallo/.cache/omnisharp-vim/omnisharp-roslyn/run"
+alias OmniSharp="/home/caiodgallo/.cache/omnisharp-vim/omnisharp-roslyn/run"
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
@@ -91,8 +91,8 @@ export PATH=$PATH:/usr/local/go/bin
 export GOPATH=$HOME/go
 export GOBIN=$GOPATH/bin
 export PATH=$PATH:$GOBIN
-export PATH="/home/caiogallo/.local/share/bob/nvim-bin:$PATH"
-export DENO_INSTALL="/home/caiogallo/.deno"
+export PATH="/home/caiodgallo/.local/share/bob/nvim-bin:$PATH"
+export DENO_INSTALL="/home/caiodgallo/.deno"
 export PATH="$DENO_INSTALL/bin:$PATH"
 export PATH=~/.composer/vendor/bin:$PATH
 export PATH=~/.config/composer/vendor/bin/:$PATH
@@ -126,9 +126,7 @@ autoload -U +X bashcompinit && bashcompinit
 
 [[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"
 
-export PATH="$PATH:/home/caiogallo/.local/bin"
+export PATH="$PATH:/home/caiodgallo/.local/bin"
 export PATH=/usr/lib/cargo/bin/coreutils:$PATH
-
-. "$HOME/.atuin/bin/env"
 
 eval "$(atuin init zsh)"
