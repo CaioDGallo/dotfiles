@@ -336,6 +336,10 @@ gsettings set org.gnome.shell.keybindings switch-to-application-7 "['<Super>7']"
 gsettings set org.gnome.shell.keybindings switch-to-application-8 "['<Super>8']"
 gsettings set org.gnome.shell.keybindings switch-to-application-9 "['<Super>9']"
 
+# Disable default screenshot shortcuts
+gsettings set org.gnome.shell.keybindings screenshot "[]"
+gsettings set org.gnome.shell.keybindings screenshot-window "[]"
+
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ name 'Flameshot'
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ command 'flameshot gui'
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ binding 'Print'
