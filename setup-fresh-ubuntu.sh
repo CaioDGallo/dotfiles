@@ -61,7 +61,7 @@ sudo usermod -aG docker $USER
 # Install development tools
 print_step "Installing development tools"
 sudo apt install -y ripgrep fd-find zsh bat tmux tmuxp stow rust-coreutils \
-  lua5.4 luarocks flameshot
+  lua5.4 luarocks flameshot flatpak
 
 # Make zsh the default shell
 sudo chsh -s $(which zsh)
