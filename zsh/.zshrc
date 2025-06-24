@@ -103,9 +103,9 @@ export COLORTERM=truecolor
 
 . "$HOME/.cargo/env"
 
-#setxkbmap -layout us -variant intl
-# setxkbmap -layout br -variant abnt2
-# setxkbmap -option caps:escape
+setxkbmap -layout us -variant intl
+#setxkbmap -layout br -variant abnt2
+setxkbmap -option caps:escape
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
