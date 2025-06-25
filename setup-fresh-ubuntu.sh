@@ -38,8 +38,8 @@ if command -v php >/dev/null 2>&1; then
   print_success "PHP is already installed (version: $PHP_VERSION)"
 else
   print_step "Installing PHP 8.3 with extensions"
-  sudo apt-get update
-  sudo apt-get upgrade
+  sudo apt update -y
+  sudo apt upgrade -y
   sudo apt install -y --no-install-recommends php php-cli php-common \
     php-mysql php-zip php-gd php-mbstring php-curl \
     php-xml php-bcmath
@@ -73,8 +73,13 @@ sudo usermod -aG docker $USER
 
 # Install development tools
 print_step "Installing development tools"
+
+# Add DBeaver CE repository
+sudo add-apt-repository -y ppa:serge-rider/dbeaver-ce
+sudo apt update
+
 sudo apt install -y ripgrep fd-find zsh bat tmux tmuxp stow rust-coreutils \
-  lua5.4 luarocks flameshot flatpak xclip
+  lua5.4 luarocks flameshot flatpak xclip dbeaver-ce
 
 # Make zsh the default shell (only if not already set)
 if [ "$SHELL" != "$(which zsh)" ]; then
@@ -335,6 +340,8 @@ gsettings set org.gnome.shell.keybindings switch-to-application-6 "['<Super>6']"
 gsettings set org.gnome.shell.keybindings switch-to-application-7 "['<Super>7']"
 gsettings set org.gnome.shell.keybindings switch-to-application-8 "['<Super>8']"
 gsettings set org.gnome.shell.keybindings switch-to-application-9 "['<Super>9']"
+
+gsettings set org.gnome.desktop.wm.keybindings close "['<Alt>q']"
 
 # Disable default screenshot shortcuts
 gsettings set org.gnome.shell.keybindings screenshot "[]"
