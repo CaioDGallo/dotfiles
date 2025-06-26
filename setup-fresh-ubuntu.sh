@@ -81,6 +81,9 @@ sudo apt update
 sudo apt install -y ripgrep fd-find zsh bat tmux tmuxp stow rust-coreutils \
   lua5.4 luarocks flameshot flatpak xclip dbeaver-ce
 
+# Add Tmux Plugin Manager (TPM)
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+
 # Make zsh the default shell (only if not already set)
 if [ "$SHELL" != "$(which zsh)" ]; then
   print_step "Setting zsh as default shell"
@@ -361,12 +364,12 @@ gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "[
 apps=(
   "google-chrome.desktop"
   "com.mitchellh.ghostty.desktop"
-  "WhatsApp.desktop"
-  "com.discordapp.Discord.desktop"
   "md.obsidian.Obsidian.desktop"
+  "com.discordapp.Discord.desktop"
   "1password.desktop"
   "dbeaver-ce.desktop"
   "com.getpostman.Postman.desktop"
+  "WhatsApp.desktop"
   "org.gnome.Settings.desktop"
 )
 
