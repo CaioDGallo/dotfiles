@@ -21,7 +21,7 @@ print_success() {
 # System update and basic tools
 print_step "Updating system and installing basic tools"
 sudo apt update
-sudo apt install -y curl wget gpg ca-certificates git
+sudo apt install -y curl wget gpg ca-certificates git build-essential software-properties-common apt-transport-https make cmake
 
 # Clone dotfiles first
 print_step "Cloning dotfiles"
@@ -164,7 +164,7 @@ for tool in "${RUST_TOOLS[@]}"; do
   if ! command -v "$tool" >/dev/null 2>&1; then
     case "$tool" in
     "dust") TOOLS_TO_INSTALL+=("du-dust") ;;
-    "yazi") TOOLS_TO_INSTALL+=("yazi-cli") ;;
+    "yazi") TOOLS_TO_INSTALL+=("yazi-fm") ;;
     "bob") TOOLS_TO_INSTALL+=("bob-nvim") ;;
     *) TOOLS_TO_INSTALL+=("$tool") ;;
     esac

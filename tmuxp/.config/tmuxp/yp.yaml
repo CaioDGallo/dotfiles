@@ -1,0 +1,12 @@
+session_name: yp
+windows:
+  - focus: "true"
+    layout: b361,191x41,0,0[191x33,0,0,1,191x7,0,34{95x7,0,34,2,95x7,96,34,4}]
+    options: {}
+    panes:
+      - focus: "true"
+        shell_command: nvim .
+      - clear
+      - clear
+    start_directory: /home/caiodgallo/projects/yachtingpages
+    window_name: yp
